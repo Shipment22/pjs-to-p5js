@@ -2,5 +2,5 @@
     "-W033": true,
     "-W008": true,
     "-W088": true,
-    "esversion": 6
+    "esversion": 11
 }
