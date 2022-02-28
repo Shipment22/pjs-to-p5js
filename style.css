@@ -1,0 +1,47 @@
+html, body {
+  margin: 1.25%;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+
+#in-out {
+  display: flex;
+  gap: .3rem
+}
+
+textarea {
+  flex-grow: 1;
+  min-height: 100px;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+}
+
+button {
+  background-color: rgb(19, 165, 68);
+  border: none;
+  color: white;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  padding: .7em;
+}
+
+button:hover {
+  background-color: rgb(21, 156, 66);
+}
+
+button:active {
+  background-color: rgb(22, 153, 66);
+}
+
+iframe {
+  min-height: 74vh;
+}

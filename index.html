@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pjs to p5</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="in-out">
+        <textarea id="input">
+            smooth();
+            noStroke();
+    
+            var cam = {
+                x: 0,
+                y: 0,
+                
+                v: {
+                    x: 0,
+                    y: 0
+                },
+                
+                zoom: 1,
+            };
+    
+            var keys = [];
+    
+            var windX = 1;
+            var windY = 0;
+    
+            var riseRate = 2;
+            var decayRate = 0.6;
+    
+            var fires = [];
+            var trees = [];
+            var piles = [];
+    
+            function createPartacles(p, x, y, amt, rad, ss, s) {
+                amt = amt || 25;
+                rad = rad || 20;
+                ss = ss || 10;
+                s = s || ss * 1.5;
+                for (var i = 0; i < amt; i ++) {
+                    p.push(
+                        {
+                            x: x + random(-rad, rad), 
+                            y: y + random(-rad, rad), 
+                            s: random(ss, s)
+                        }
+                    );
+                }
+            }
+    
+            function drawFire(partacles, x, y, amt, rad, s, ss) {
+                amt = amt || 25;
+                rad = rad || 20;
+                ss = ss || 10;
+                s = s || ss * 1.5;
+                
+                for (var i in partacles) {
+                    var p = partacles[i];
+                    
+                    p.x += windX + random(-1, 1);
+                    p.y += windY + random(-1, 1);
+                    p.y -= riseRate;
+                    
+                    fill(245 - p.s * 2, 177 - p.s * 4, 32 - p.s * 6);
+                    ellipse(p.x, p.y, p.s, p.s);
+                    
+                    p.s -= decayRate;
+                    if (p.s <= 0) {
+                        partacles.splice(i, 1);
+                    }
+                }
+                
+                while (partacles.length < amt) {
+                    partacles.push(
+                        {
+                            x: x + random(-rad, rad), 
+                            y: y + random(-rad, rad), 
+                            s: random(ss, s)
+                        }
+                    );
+                }
+            }
+    
+            function drawTree(partacles, x, y, amt, rad, s, ss, decay) {
+                amt = amt || 25;
+                rad = rad || 20;
+                ss = ss || 10;
+                s = s || ss * 1.5;
+                
+                fill(117, 77, 53);
+                rect(x - 5, y, 10, 40);
+                
+                for (var i in partacles) {
+                    var p = partacles[i];
+                    
+                    
+                    fill(0 - p.s * 2, 177 - p.s * 4, 32 - p.s * 6);
+                    ellipse(p.x, p.y, p.s, p.s);
+                    
+                    if (decay && floor(random(10)) < i) {
+                        p.x += windX + random(-1, 1);
+                        p.y += windY + random(-1, 1);
+                        p.s -= decayRate / 2;
+                        if (p.s <= 0) {
+                            partacles.splice(i, 1);
+                        }
+                    }
+                }
+                
+            }
+    
+            for (var i = 0; i < random(5); i ++) {
+                var x = random(width);
+                var y = random(height);
+                
+                trees.push(
+                    {
+                        p: [],
+                        x: x,
+                        y: y
+                    }	
+                );
+                var tree = trees[trees.length - 1];
+                createPartacles(tree.p, tree.x, tree.y);
+                fires.push(
+                    {
+                        p: [],
+                        x: x,
+                        y: y,
+                        draw: false
+                    }	
+                );
+                var fire = fires[fires.length - 1];
+                createPartacles(fire.p, fire.x, fire.y);
+            }
+    
+            draw = function() {
+                if (keys[UP]) {
+                    cam.v.y = lerp(cam.v.y, 7, 0.1);
+                } else if (keys[DOWN]) {
+                    cam.v.y = lerp(cam.v.y, -7, 0.1);
+                } else {
+                    cam.v.y = lerp(cam.v.y, 0, 0.1);
+                }
+                if (keys[LEFT]) {
+                    cam.v.x = lerp(cam.v.x, 7, 0.1);
+                } else if (keys[RIGHT]) {
+                    cam.v.x = lerp(cam.v.x, -7, 0.1);
+                } else {
+                    cam.v.x = lerp(cam.v.x, 0, 0.1);
+                }
+                
+                cam.x += cam.v.x;
+                cam.y += cam.v.y;
+                
+                translate(cam.x, cam.y);
+                scale(cam.zoom);
+                
+                background(56, 56, 56);
+                
+                for (var i in piles) {
+                    var pile = piles[i];
+                    fill(255);
+                    ellipse(pile.x, pile.y, pile.s, pile.s - 10);
+                }
+                
+                for (var i = trees.length - 1; i > 0; i --) {
+                    var decay = false;
+                    
+                    if (fires[i].draw) {
+                        drawFire(fires[i].p, fires[i].x, fires[i].y);
+                        decay = [true, false, false][floor(random())];
+                    }
+                    
+                    drawTree(trees[i].p, trees[i].x, trees[i].y, 20, 30, 10, 15, decay);
+                    if (trees[i].p.length < 2) {
+                        piles.push(
+                            {
+                                x: trees[i].x,
+                                y: trees[i].y + 40,
+                                s: random(30, 40)
+                            }	
+                        );
+                        trees.splice(i, 1);
+                        fires.splice(i, 1);
+                    }
+                }
+                
+                resetMatrix();
+                
+                text(this.__frameRate, 20, 20);
+            };
+    
+            function mouseClicked() {
+                if (mouseButton === LEFT) {
+                    var x = mouseX + -cam.x;
+                    var y = mouseY + -cam.y;
+                    
+                    trees.push(
+                        {
+                            p: [],
+                            x: x,
+                            y: y
+                        }	
+                    );
+                    var tree = trees[trees.length - 1];
+                    createPartacles(tree.p, tree.x, tree.y);
+                    fires.push(
+                        {
+                            p: [],
+                            x: x,
+                            y: y,
+                            draw: false
+                        }	
+                    );
+                    var fire = fires[fires.length - 1];
+                    createPartacles(fire.p, fire.x, fire.y);
+                } else {
+                    for (var i in trees) {
+                        var d = dist(mouseX - cam.x, mouseY - cam.y, trees[i].x, trees[i].y);
+                        fires[i].draw = d < 40 ? true : fires[i].draw;
+                    }
+                }
+            }
+    
+            function keyPressed() {
+                keys[keyCode] = true;
+            }
+    
+            function keyReleased() {
+                keys[keyCode] = false;
+            }
+        </textarea>
+        <textarea id="output"></textarea>
+    </div>
+    
+    <button id="dewit">dewit</button>
+
+    <iframe id="iframe"></iframe>
+
+    <script src="sketch.js"></script>
+</body>
+</html>
