@@ -4,51 +4,42 @@ cnv
 
 let pjs = input.value, p5js = ''
 
-// const replace = {
-// 	size: 'resizeCanvas',
-// 	pushMatrix: 'push',
-// 	popMatrix: 'pop',
-// 	rekt: 'rect',
-// 	setup: 'setup1',
-// 	';': ';\n',
-// 	PVector: 'p5.Vector'
-// }
-
-
 document.getElementById('dewit').onclick = () => {
-	console.log('test')
-
 	p5js = pjs = input.value
 
+	function r() {
+		p5js = p5js.replace(...arguments)
+	}
 
-	p5js = p5js.replace(/function draw\(/, 'draw = function(')
-	p5js = p5js.replace(/function mouseClicked\(/, 'mouseClicked = function(')
-	p5js = p5js.replace(/function mousePressed\(/, 'mousePressed = function(')
-	p5js = p5js.replace(/function mouseReleased\(/, 'mouseReleased = function(')
-	p5js = p5js.replace(/function keyPressed\(/, 'keyPressed = function(')
-	p5js = p5js.replace(/function keyTyped\(/, 'keyTyped = function(')
-	p5js = p5js.replace(/function keyReleased\(/, 'keyReleased = function(')
+	// fix scope issues that are introduced by putting everything into setup
+	r(/function draw\(/, 'draw = function(')
+	r(/function mouseClicked\(/, 'mouseClicked = function(')
+	r(/function mousePressed\(/, 'mousePressed = function(')
+	r(/function mouseReleased\(/, 'mouseReleased = function(')
+	r(/function keyPressed\(/, 'keyPressed = function(')
+	r(/function keyTyped\(/, 'keyTyped = function(')
+	r(/function keyReleased\(/, 'keyReleased = function(')
 
 	p5js = p5js.replaceAll(/this.__frameRate/g, 'frameRate()')
 	
-	p5js = p5js.replaceAll(/pushMatrix/g, 'push')
-	p5js = p5js.replaceAll(/popMatrix/g, 'pop')
-	p5js = p5js.replaceAll(/pushStyle/g, 'push')
-	p5js = p5js.replaceAll(/popStyle/g, 'pop')
+	r(/pushMatrix/g, 'push') // no more specific pushing / poping
+	r(/popMatrix/g, 'pop')
+	r(/pushStyle/g, 'push')
+	r(/popStyle/g, 'pop')
 
-	p5js = p5js.replaceAll(/[^a-zA-Z]size/g, 'resizeCanvas')
+	r(/[^a-zA-Z]size/g, 'resizeCanvas') // no more size just canvas :)
 
-	p5js = p5js.replaceAll(/PVector/g, 'p5.Vector')
+	r(/PVector/g, 'p5.Vector') // replace de PVector duh p5.Vector
 
-	p5js = p5js.replaceAll(/JAVA2D/g, 'P2D')
+	r(/JAVA2D/g, 'P2D') // fu people who want to "look more professional"
 
-	p5js = p5js.replaceAll(/println/g, 'console.log')
+	r(/println/g, 'console.log') // println go brr
 
-	p5js = p5js.replaceAll(/LEFT/g, '37')
-	p5js = p5js.replaceAll(/RIGHT/g, '39')
+	r(/LEFT/g, '37') // replace LEFT with its keycode
+	r(/RIGHT/g, '39') // replace RIGHT with its keycode
 
-	p5js = p5js.replaceAll(/mouseButton === 37/g, 'mouseButton === LEFT')
-	p5js = p5js.replaceAll(/mouseButton === 39/g, 'mouseButton === RIGHT')
+	r(/mouseButton === 37/g, 'mouseButton === LEFT') // fix replacing LEFT with the left arrow keycode
+	r(/mouseButton === 39/g, 'mouseButton === RIGHT') // fix replacing RIGHT with the right arrow keycode
 
 	p5js = `
 let MouseButton = 'left', 
@@ -85,8 +76,10 @@ function setup() {
 	${p5js}
 }`
 
+	// set output
 	output.innerText = p5js
 
+	// draw to preview
 	document.getElementById('iframe').srcdoc = `<!DOCTYPE html>
 	<html lang="en">
 	<head>
